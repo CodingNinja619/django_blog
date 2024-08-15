@@ -1,0 +1,33 @@
+<span class="step-links">
+    {% if page.has_previous %}
+        <a href="?page={{page.previous_page_number}}"><<</a>
+    {% endif %}
+    {% if page.number != 1 %}
+        <a href="?page=1">1</a>
+    {% endif %}
+    
+    {% if pages_list.before_prev %}
+        <a href="?page={{page.number|add:'-2'}}">{{page.number|add:"-2"}}</a>
+    {% endif %}
+    {% if page.has_previous %}
+        <a href="?page={{page.previous_page_number}}">{{page.previous_page_number}}</a>
+    {% endif %}
+    <span class="current">
+        {{page.number}}
+    </span>
+    {% if page.has_next and page.paginator.num_pages - page.number > 1 %}
+        <a href="?page={{page.next_page_number}}">{{page.next_page_number}}</a>
+    {% endif %}
+    {% if pages_list.after_next %}
+        {{pages_list.after_next}}
+        <a href="?page={{page.number|add:'+2'}}">{{page.number|add:"+2"}}</a>
+    {% endif %}
+    {% if page.number != page.paginator.num_pages %}
+        <a href="?page={{page.paginator.num_pages}}">{{page.paginator.num_pages}}</a>
+    {% else %}
+        {{page.paginator.num_pages}}
+    {% endif %}
+    {% if page.has_next %}
+        <a href="?page={{page.next_page_number}}">>></a>
+    {% endif %}
+</span>
