@@ -2,6 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
+from faker import Faker
+from django.utils.text import slugify
 
 class PublishedManager(models.Manager):
     def get_queryset(self):
@@ -34,3 +36,17 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title[:50]
+
+class PostFactory:
+    fake = Faker()
+    @staticmethod
+    def create(title=None, body=None, author=None):
+        title = title or PostFactory.fake.sentence()
+        body = body or PostFactory.fake.paragraph()
+        author = author or User.objects.first()
+        slug = slugify(title)
+        return Post.objects.create(title=title, body=body, author=author, slug=slug)
+    
+    @staticmethod
+    def create_batch(n, **kwargs):
+        return [PostFactory.create(**kwargs) for _ in range(n)]

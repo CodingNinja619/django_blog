@@ -2,31 +2,13 @@
     {% if page.has_previous %}
         <a href="?page={{page.previous_page_number}}"><<</a>
     {% endif %}
-    {% if page.number != 1 %}
-        <a href="?page=1">1</a>
-    {% endif %}
-    
-    {% if pages_list.before_prev %}
-        <a href="?page={{page.number|add:'-2'}}">{{page.number|add:"-2"}}</a>
-    {% endif %}
-    {% if page.has_previous %}
-        <a href="?page={{page.previous_page_number}}">{{page.previous_page_number}}</a>
-    {% endif %}
-    <span class="current">
-        {{page.number}}
-    </span>
-    {% if page.has_next and page.paginator.num_pages - page.number > 1 %}
-        <a href="?page={{page.next_page_number}}">{{page.next_page_number}}</a>
-    {% endif %}
-    {% if pages_list.after_next %}
-        {{pages_list.after_next}}
-        <a href="?page={{page.number|add:'+2'}}">{{page.number|add:"+2"}}</a>
-    {% endif %}
-    {% if page.number != page.paginator.num_pages %}
-        <a href="?page={{page.paginator.num_pages}}">{{page.paginator.num_pages}}</a>
-    {% else %}
-        {{page.paginator.num_pages}}
-    {% endif %}
+    {% for page_number in page.adjusted_elided_pages %}
+        {% if page_number == page.paginator.ELLIPSIS or page_number == current_page_number %}
+            {{page_number}}
+        {% else %}
+            <a href="?page={{page_number}}">{{page_number}}</a>
+        {% endif %}
+    {% endfor %}
     {% if page.has_next %}
         <a href="?page={{page.next_page_number}}">>></a>
     {% endif %}
