@@ -3,6 +3,23 @@ from .models import *
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.views.generic import ListView
+
+class PostListView(ListView):
+    queryset = Post.published.all() # or model = Post if I want default Post.objects.all()
+    context_object_name = "posts"
+    paginate_by = 3
+    template_name = "blog/post/list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        paginator = context["paginator"]
+        page_obj = context["page_obj"]
+        page_range = paginator.get_elided_page_range(number=page_obj.number)
+        context["page_range"] = page_range
+        context["current_page_number"] = page_obj.number
+        return context
+
 
 def post_list(request):
     post_list = Post.published.all()
