@@ -4,6 +4,8 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import ListView
+from .forms import *
+from django.core.mail import send_mail
 
 class PostListView(ListView):
     queryset = Post.published.all() # or model = Post if I want default Post.objects.all()
@@ -51,3 +53,23 @@ def post_detail(request, year, month, day, post):
                              publish__day=day)
     
     return render(request, "blog/post/detail.html", {"post": post})
+
+def post_share(request, post_id):
+    post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
+    sent = False
+
+    if request.method == "POST":
+        form = EmailPostForm(request.POST)
+        if form.is_valid():
+            # form validated
+            cd = form.cleaned_data
+            post_url = request.build_absolute_uri(post.get_absolute_url())
+            subject = f"{cd['name']} recommends you read {post.title}"
+            body = f"Read {post.title} at {post_url}\n\n{cd['name']}'s comment: {cd['comment']}"
+            
+            send_mail(subject, body, "hitmanabsolution25@gmail.com", [cd["to"]])
+            sent = True
+    else:
+        form = EmailPostForm()
+
+    return render(request, "blog/post/share.html", {"post": post, "form": form, "sent": sent})
