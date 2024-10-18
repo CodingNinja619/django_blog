@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from faker import Faker
 from django.utils.text import slugify
+from taggit.managers import TaggableManager
 
 class PublishedManager(models.Manager):
     def get_queryset(self):
@@ -21,12 +22,12 @@ class Post(models.Model):
     updated = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=2, choices=Status.choices, default=Status.DRAFT)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-
+    tags = TaggableManager()
     objects = models.Manager() # Default manager
     published = PublishedManager() # Custom manager that returns published objects
 
     class Meta:
-        ordering = ["-publish"]
+        ordering = ["publish"]
         indexes = [
             models.Index(fields=["-publish"]),
         ]

@@ -8,6 +8,8 @@ from django.views.generic import ListView
 from .forms import *
 from django.core.mail import send_mail
 from django.views.decorators.http import require_POST
+from taggit.models import Tag
+from django.db.models import Count, Q
 
 class PostListView(ListView):
     queryset = Post.published.all() # or model = Post if I want default Post.objects.all()
@@ -25,9 +27,16 @@ class PostListView(ListView):
         return context
 
 
-def post_list(request):
+def post_list(request, tag_slug=None):
     post_list = Post.published.all()
-    paginator = Paginator(post_list, 2)
+
+    tag = None
+    if tag_slug:
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        # post_list = post_list.filter(tags__=[tag])
+        post_list = post_list.filter(tags__slug = tag_slug)
+
+    paginator = Paginator(post_list, 3)
     page_number = int(request.GET.get("page", 1))
     try:
         posts = paginator.page(page_number)
@@ -38,7 +47,7 @@ def post_list(request):
     # print(type(posts))
     posts.adjusted_elided_pages = posts.paginator.get_elided_page_range(number=page_number, on_each_side=3, on_ends=2)
 
-    return render(request, 'blog/post/list.html', {"posts": posts, "current_page_number": page_number})
+    return render(request, 'blog/post/list.html', {"posts": posts, "current_page_number": page_number, "tag": tag})
 
 
 def post_detail(request, year, month, day, post):
@@ -53,11 +62,19 @@ def post_detail(request, year, month, day, post):
                              publish__year=year,
                              publish__month=month,
                              publish__day=day)
+
+    # 1 get post tags ids
+    # 2 get posts that have those ids
+    # 3 sort posts by tags amount and publish date
+
+    post_tags_id = post.tags.values_list("id", flat=True)
+    similar_posts = Post.objects.filter(tags__in=post_tags_id).exclude(id=post.id)
+    similar_posts = similar_posts.annotate(same_tags=Count('tags', filter=Q(tags__in=post_tags_id))).order_by("-same_tags", "-publish")[:4]
     
     comments = post.comments.filter(active=True)
     form = CommentForm()
     
-    return render(request, "blog/post/detail.html", {"post": post, "comments": comments, "form": form})
+    return render(request, "blog/post/detail.html", {"post": post, "comments": comments, "form": form, "similar_posts": similar_posts})
 
 def post_share(request, post_id):
     post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)

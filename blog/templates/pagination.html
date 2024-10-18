@@ -2,9 +2,9 @@
     {% if page.has_previous %}
         <a href="?page={{page.previous_page_number}}"><<</a>
     {% endif %}
-    {% for page_number in page_range %}
+    {% for page_number in page.adjusted_elided_pages %}
         {% if page_number == page.paginator.ELLIPSIS or page_number == current_page_number %}
-            {{page_number}}
+            <b>{{page_number}}</b>
         {% else %}
             <a href="?page={{page_number}}">{{page_number}}</a>
         {% endif %}
