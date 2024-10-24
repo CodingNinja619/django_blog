@@ -1,0 +1,1 @@
+{% load blog_tags %} in base.html causes errors.
